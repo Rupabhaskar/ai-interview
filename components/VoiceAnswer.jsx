@@ -268,6 +268,7 @@ export default function VoiceAnswer({ onFinal }) {
 
   const recognitionRef = useRef(null);
   const shouldListenRef = useRef(false);
+  const lastFinalIndexRef = useRef(0); // 🔑 IMPORTANT
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -276,7 +277,7 @@ export default function VoiceAnswer({ onFinal }) {
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      alert("Speech Recognition not supported in this browser");
+      alert("Speech Recognition not supported");
       return;
     }
 
@@ -286,24 +287,30 @@ export default function VoiceAnswer({ onFinal }) {
     recognition.interimResults = true;
 
     recognition.onresult = (event) => {
-      let final = "";
       let interim = "";
+      let newFinal = "";
 
-      for (let i = 0; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          final += transcript + " ";
+      // ✅ ONLY process NEW results
+      for (let i = lastFinalIndexRef.current; i < event.results.length; i++) {
+        const result = event.results[i];
+        const transcript = result[0].transcript;
+
+        if (result.isFinal) {
+          newFinal += transcript + " ";
+          lastFinalIndexRef.current = i + 1; // 🔥 advance pointer
         } else {
           interim += transcript;
         }
       }
 
-      setFinalText(final.trim());
+      if (newFinal) {
+        setFinalText((prev) => (prev + newFinal).trim());
+      }
+
       setInterimText(interim);
     };
 
     recognition.onend = () => {
-      // restart ONLY if user is still recording
       if (shouldListenRef.current) {
         try {
           recognition.start();
@@ -311,15 +318,9 @@ export default function VoiceAnswer({ onFinal }) {
       }
     };
 
-    recognition.onerror = (err) => {
-      console.error("Speech recognition error:", err);
-    };
-
     recognitionRef.current = recognition;
 
-    return () => {
-      recognition.stop();
-    };
+    return () => recognition.stop();
   }, []);
 
   const startRecording = () => {
@@ -327,6 +328,7 @@ export default function VoiceAnswer({ onFinal }) {
 
     setFinalText("");
     setInterimText("");
+    lastFinalIndexRef.current = 0; // 🔥 reset
     shouldListenRef.current = true;
     setListening(true);
 
@@ -350,9 +352,9 @@ export default function VoiceAnswer({ onFinal }) {
       {!listening ? (
         <button
           onClick={startRecording}
-          className="w-full bg-blue-600 text-white py-3 rounded font-semibold"
+          className="w-full bg-green-600 text-white py-3 rounded font-semibold"
         >
-          🎙️ Start Recording
+          🎙️ Speak Question
         </button>
       ) : (
         <button
@@ -363,7 +365,7 @@ export default function VoiceAnswer({ onFinal }) {
         </button>
       )}
 
-      <div className="mt-3 p-3 border rounded bg-gray-50 text-sm min-h-[120px]">
+      <div className="mt-3 p-3 border rounded bg-gray-50 min-h-[120px] text-sm">
         <span className="text-black">{finalText} </span>
         <span className="text-gray-400">{interimText}</span>
       </div>
