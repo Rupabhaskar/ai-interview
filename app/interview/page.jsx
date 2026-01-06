@@ -647,170 +647,170 @@
 
 
 
-// "use client";
+"use client";
 
-// import { useState, useEffect } from "react";
-// import ResumeAnalyzer from "@/components/ResumeAnalyzer";
+import { useState, useEffect } from "react";
+import ResumeAnalyzer from "@/components/ResumeAnalyzer";
 
-// /* ================================
-//    SCORING LOGIC
-// ================================ */
-// function grammarAndEnglishScore(text) {
-//   const words = text.split(" ").length;
-//   const sentences = text.split(/[.!?]/).length;
-//   return {
-//     grammar: Math.max(10 - Math.abs(sentences - 3), 4),
-//     english: Math.min(10, Math.max(4, words / 5)),
-//   };
-// }
+/* ================================
+   SCORING LOGIC
+================================ */
+function grammarAndEnglishScore(text) {
+  const words = text.split(" ").length;
+  const sentences = text.split(/[.!?]/).length;
+  return {
+    grammar: Math.max(10 - Math.abs(sentences - 3), 4),
+    english: Math.min(10, Math.max(4, words / 5)),
+  };
+}
 
-// function meaningScore(text) {
-//   let score = 8;
-//   if (text.length < 50) score -= 2;
-//   return Math.max(score, 3);
-// }
+function meaningScore(text) {
+  let score = 8;
+  if (text.length < 50) score -= 2;
+  return Math.max(score, 3);
+}
 
-// function technicalScore(text, skills) {
-//   let matched = 0;
-//   const lower = text.toLowerCase();
-//   skills.forEach((s) => lower.includes(s) && matched++);
-//   return Math.min(10, matched * 2);
-// }
+function technicalScore(text, skills) {
+  let matched = 0;
+  const lower = text.toLowerCase();
+  skills.forEach((s) => lower.includes(s) && matched++);
+  return Math.min(10, matched * 2);
+}
 
-// /* ================================
-//    PAGE
-// ================================ */
-// export default function InterviewPage() {
-//   const [questions, setQuestions] = useState([]);
-//   const [skills, setSkills] = useState([]);
-//   const [started, setStarted] = useState(false);
+/* ================================
+   PAGE
+================================ */
+export default function InterviewPage() {
+  const [questions, setQuestions] = useState([]);
+  const [skills, setSkills] = useState([]);
+  const [started, setStarted] = useState(false);
 
-//   const [current, setCurrent] = useState(0);
-//   const [answer, setAnswer] = useState("");
+  const [current, setCurrent] = useState(0);
+  const [answer, setAnswer] = useState("");
 
-//   /* ===== VOICE STATE ===== */
-//   const [voices, setVoices] = useState([]);
-//   const [voiceReady, setVoiceReady] = useState(false);
+  /* ===== VOICE STATE ===== */
+  const [voices, setVoices] = useState([]);
+  const [voiceReady, setVoiceReady] = useState(false);
 
-//   /* ================================
-//      LOAD VOICES (MOBILE SAFE)
-// ================================ */
-//   useEffect(() => {
-//     const loadVoices = () => {
-//       const v = window.speechSynthesis.getVoices();
+  /* ================================
+     LOAD VOICES (MOBILE SAFE)
+================================ */
+  useEffect(() => {
+    const loadVoices = () => {
+      const v = window.speechSynthesis.getVoices();
 
-//       if (v.length > 0) {
-//         setVoices(v);
-//         setVoiceReady(true);
-//       }
-//     };
+      if (v.length > 0) {
+        setVoices(v);
+        setVoiceReady(true);
+      }
+    };
 
-//     loadVoices();
-//     window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
 
-//     return () => {
-//       window.speechSynthesis.onvoiceschanged = null;
-//     };
-//   }, []);
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
 
-//   /* ================================
-//      SPEAK QUESTION (SAFE)
-// ================================ */
-//   const speakQuestion = () => {
-//     if (!voiceReady) {
-//       alert("Voice not supported on this device/browser");
-//       return;
-//     }
+  /* ================================
+     SPEAK QUESTION (SAFE)
+================================ */
+  const speakQuestion = () => {
+    if (!voiceReady) {
+      alert("Voice not supported on this device/browser");
+      return;
+    }
 
-//     const utterance = new SpeechSynthesisUtterance(
-//       questions[current]
-//     );
+    const utterance = new SpeechSynthesisUtterance(
+      questions[current]
+    );
 
-//     // ✅ Mobile-safe: use first available system voice
-//     utterance.voice = voices[0];
-//     utterance.rate = 1;
-//     utterance.pitch = 1;
+    // ✅ Mobile-safe: use first available system voice
+    utterance.voice = voices[0];
+    utterance.rate = 1;
+    utterance.pitch = 1;
 
-//     window.speechSynthesis.cancel();
-//     window.speechSynthesis.speak(utterance);
-//   };
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  };
 
-//   const submitAnswer = () => {
-//     setAnswer("");
-//     setCurrent((c) => c + 1);
-//   };
+  const submitAnswer = () => {
+    setAnswer("");
+    setCurrent((c) => c + 1);
+  };
 
-//   /* ================================
-//      RESUME STEP
-// ================================ */
-//   if (!started) {
-//     return (
-//       <ResumeAnalyzer
-//         onReady={({ skills, questions }) => {
-//           setSkills(skills);
-//           setQuestions(questions);
-//           setStarted(true);
-//         }}
-//       />
-//     );
-//   }
+  /* ================================
+     RESUME STEP
+================================ */
+  if (!started) {
+    return (
+      <ResumeAnalyzer
+        onReady={({ skills, questions }) => {
+          setSkills(skills);
+          setQuestions(questions);
+          setStarted(true);
+        }}
+      />
+    );
+  }
 
-//   /* ================================
-//      INTERVIEW UI (MOBILE)
-// ================================ */
-//   return (
-//     <div className="min-h-screen flex items-center justify-center px-4">
-//       <div className="bg-white w-full max-w-md p-5 rounded-xl shadow">
-//         <p className="text-xs text-gray-500 mb-2">
-//           Question {current + 1} / {questions.length}
-//         </p>
+  /* ================================
+     INTERVIEW UI (MOBILE)
+================================ */
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="bg-white w-full max-w-md p-5 rounded-xl shadow">
+        <p className="text-xs text-gray-500 mb-2">
+          Question {current + 1} / {questions.length}
+        </p>
 
-//         <p className="text-base font-semibold mb-3">
-//           {questions[current]}
-//         </p>
+        <p className="text-base font-semibold mb-3">
+          {questions[current]}
+        </p>
 
-//         {/* MODEL LABEL (UI ONLY) */}
-//         <div className="text-xs text-gray-600 mb-2">
-//           Voice Model: <strong>Model 2 (Default)</strong>
-//         </div>
+        {/* MODEL LABEL (UI ONLY) */}
+        <div className="text-xs text-gray-600 mb-2">
+          Voice Model: <strong>Model 2 (Default)</strong>
+        </div>
 
-//         <button
-//           onClick={speakQuestion}
-//           disabled={!voiceReady}
-//           className={`w-full py-3 rounded text-sm font-semibold ${
-//             voiceReady
-//               ? "bg-green-600 text-white"
-//               : "bg-gray-300 text-gray-600"
-//           }`}
-//         >
-//           🔊 Speak Question
-//         </button>
+        <button
+          onClick={speakQuestion}
+          disabled={!voiceReady}
+          className={`w-full py-3 rounded text-sm font-semibold ${
+            voiceReady
+              ? "bg-green-600 text-white"
+              : "bg-gray-300 text-gray-600"
+          }`}
+        >
+          🔊 Speak Question
+        </button>
 
-//         {!voiceReady && (
-//           <p className="text-xs text-red-500 mt-2">
-//             Voice not supported on this browser.  
-//             Try Chrome Desktop / Edge.
-//           </p>
-//         )}
+        {!voiceReady && (
+          <p className="text-xs text-red-500 mt-2">
+            Voice not supported on this browser.  
+            Try Chrome Desktop / Edge.
+          </p>
+        )}
 
-//         <textarea
-//           className="w-full border rounded p-3 mt-4 text-sm"
-//           rows="5"
-//           value={answer}
-//           onChange={(e) => setAnswer(e.target.value)}
-//           placeholder="Type your answer..."
-//         />
+        <textarea
+          className="w-full border rounded p-3 mt-4 text-sm"
+          rows="5"
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+          placeholder="Type your answer..."
+        />
 
-//         <button
-//           onClick={submitAnswer}
-//           className="w-full bg-blue-600 text-white py-3 rounded mt-4 text-sm font-semibold"
-//         >
-//           Submit Answer
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
+        <button
+          onClick={submitAnswer}
+          className="w-full bg-blue-600 text-white py-3 rounded mt-4 text-sm font-semibold"
+        >
+          Submit Answer
+        </button>
+      </div>
+    </div>
+  );
+}
 
 
 
@@ -1006,196 +1006,196 @@
 
 
 
-"use client";
+// "use client";
 
-import { useState, useEffect } from "react";
-import ResumeAnalyzer from "@/components/ResumeAnalyzer";
+// import { useState, useEffect } from "react";
+// import ResumeAnalyzer from "@/components/ResumeAnalyzer";
 
-/* ================================
-   SCORING LOGIC
-================================ */
-function grammarAndEnglishScore(text) {
-  const words = text.split(" ").length;
-  const sentences = text.split(/[.!?]/).length;
-  return {
-    grammar: Math.max(10 - Math.abs(sentences - 3), 4),
-    english: Math.min(10, Math.max(4, words / 5)),
-  };
-}
+// /* ================================
+//    SCORING LOGIC
+// ================================ */
+// function grammarAndEnglishScore(text) {
+//   const words = text.split(" ").length;
+//   const sentences = text.split(/[.!?]/).length;
+//   return {
+//     grammar: Math.max(10 - Math.abs(sentences - 3), 4),
+//     english: Math.min(10, Math.max(4, words / 5)),
+//   };
+// }
 
-function meaningScore(text) {
-  let score = 8;
-  if (text.length < 50) score -= 2;
-  return Math.max(score, 3);
-}
+// function meaningScore(text) {
+//   let score = 8;
+//   if (text.length < 50) score -= 2;
+//   return Math.max(score, 3);
+// }
 
-function technicalScore(text, skills) {
-  let matched = 0;
-  const lower = text.toLowerCase();
-  skills.forEach((s) => lower.includes(s) && matched++);
-  return Math.min(10, matched * 2);
-}
+// function technicalScore(text, skills) {
+//   let matched = 0;
+//   const lower = text.toLowerCase();
+//   skills.forEach((s) => lower.includes(s) && matched++);
+//   return Math.min(10, matched * 2);
+// }
 
-/* ================================
-   MODEL LABELS (UI ONLY)
-================================ */
-const MODELS = ["Model 1", "Model 2", "Model 3"];
+// /* ================================
+//    MODEL LABELS (UI ONLY)
+// ================================ */
+// const MODELS = ["Model 1", "Model 2", "Model 3"];
 
-/* ================================
-   PAGE
-================================ */
-export default function InterviewPage() {
-  const [questions, setQuestions] = useState([]);
-  const [skills, setSkills] = useState([]);
-  const [started, setStarted] = useState(false);
+// /* ================================
+//    PAGE
+// ================================ */
+// export default function InterviewPage() {
+//   const [questions, setQuestions] = useState([]);
+//   const [skills, setSkills] = useState([]);
+//   const [started, setStarted] = useState(false);
 
-  const [current, setCurrent] = useState(0);
-  const [answer, setAnswer] = useState("");
+//   const [current, setCurrent] = useState(0);
+//   const [answer, setAnswer] = useState("");
 
-  /* ===== VOICE ===== */
-  const [voices, setVoices] = useState([]);
-  const [selectedModel, setSelectedModel] = useState("Model 2");
-  const [voiceReady, setVoiceReady] = useState(false);
+//   /* ===== VOICE ===== */
+//   const [voices, setVoices] = useState([]);
+//   const [selectedModel, setSelectedModel] = useState("Model 2");
+//   const [voiceReady, setVoiceReady] = useState(false);
 
-  /* ================================
-     LOAD SYSTEM VOICES (MOBILE SAFE)
-================================ */
-  useEffect(() => {
-    const loadVoices = () => {
-      const v = window.speechSynthesis.getVoices();
-      if (v.length > 0) {
-        setVoices(v);
-        setVoiceReady(true);
-      }
-    };
+//   /* ================================
+//      LOAD SYSTEM VOICES (MOBILE SAFE)
+// ================================ */
+//   useEffect(() => {
+//     const loadVoices = () => {
+//       const v = window.speechSynthesis.getVoices();
+//       if (v.length > 0) {
+//         setVoices(v);
+//         setVoiceReady(true);
+//       }
+//     };
 
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
+//     loadVoices();
+//     window.speechSynthesis.onvoiceschanged = loadVoices;
 
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
-  }, []);
+//     return () => {
+//       window.speechSynthesis.onvoiceschanged = null;
+//     };
+//   }, []);
 
-  /* ================================
-     MAP MODEL → VOICE
-================================ */
-  const getVoiceForModel = () => {
-    if (!voices.length) return null;
+//   /* ================================
+//      MAP MODEL → VOICE
+// ================================ */
+//   const getVoiceForModel = () => {
+//     if (!voices.length) return null;
 
-    // Model index: 0,1,2
-    const index =
-      selectedModel === "Model 1"
-        ? 0
-        : selectedModel === "Model 2"
-        ? 1
-        : 2;
+//     // Model index: 0,1,2
+//     const index =
+//       selectedModel === "Model 1"
+//         ? 0
+//         : selectedModel === "Model 2"
+//         ? 1
+//         : 2;
 
-    // Fallback-safe
-    return voices[index] || voices[0];
-  };
+//     // Fallback-safe
+//     return voices[index] || voices[0];
+//   };
 
-  /* ================================
-     SPEAK QUESTION
-================================ */
-  const speakQuestion = () => {
-    if (!voiceReady) {
-      alert("Text-to-Speech not supported on this browser.");
-      return;
-    }
+//   /* ================================
+//      SPEAK QUESTION
+// ================================ */
+//   const speakQuestion = () => {
+//     if (!voiceReady) {
+//       alert("Text-to-Speech not supported on this browser.");
+//       return;
+//     }
 
-    const utterance = new SpeechSynthesisUtterance(
-      questions[current]
-    );
+//     const utterance = new SpeechSynthesisUtterance(
+//       questions[current]
+//     );
 
-    utterance.voice = getVoiceForModel();
-    utterance.rate = 1;
-    utterance.pitch = 1;
+//     utterance.voice = getVoiceForModel();
+//     utterance.rate = 1;
+//     utterance.pitch = 1;
 
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-  };
+//     window.speechSynthesis.cancel();
+//     window.speechSynthesis.speak(utterance);
+//   };
 
-  const submitAnswer = () => {
-    setAnswer("");
-    setCurrent((c) => c + 1);
-  };
+//   const submitAnswer = () => {
+//     setAnswer("");
+//     setCurrent((c) => c + 1);
+//   };
 
-  /* ================================
-     RESUME STEP
-================================ */
-  if (!started) {
-    return (
-      <ResumeAnalyzer
-        onReady={({ skills, questions }) => {
-          setSkills(skills);
-          setQuestions(questions);
-          setStarted(true);
-        }}
-      />
-    );
-  }
+//   /* ================================
+//      RESUME STEP
+// ================================ */
+//   if (!started) {
+//     return (
+//       <ResumeAnalyzer
+//         onReady={({ skills, questions }) => {
+//           setSkills(skills);
+//           setQuestions(questions);
+//           setStarted(true);
+//         }}
+//       />
+//     );
+//   }
 
-  /* ================================
-     INTERVIEW UI (MOBILE FRIENDLY)
-================================ */
-  return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="bg-white w-full max-w-md p-5 rounded-xl shadow">
-        <p className="text-xs text-gray-500 mb-2">
-          Question {current + 1} / {questions.length}
-        </p>
+//   /* ================================
+//      INTERVIEW UI (MOBILE FRIENDLY)
+// ================================ */
+//   return (
+//     <div className="min-h-screen flex items-center justify-center px-4">
+//       <div className="bg-white w-full max-w-md p-5 rounded-xl shadow">
+//         <p className="text-xs text-gray-500 mb-2">
+//           Question {current + 1} / {questions.length}
+//         </p>
 
-        <p className="text-base font-semibold mb-3">
-          {questions[current]}
-        </p>
+//         <p className="text-base font-semibold mb-3">
+//           {questions[current]}
+//         </p>
 
-        {/* MODEL SELECTOR (NOW WORKS ON MOBILE) */}
-        <select
-          value={selectedModel}
-          onChange={(e) => setSelectedModel(e.target.value)}
-          className="w-full border rounded px-3 py-2 text-sm mb-3"
-        >
-          {MODELS.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
+//         {/* MODEL SELECTOR (NOW WORKS ON MOBILE) */}
+//         <select
+//           value={selectedModel}
+//           onChange={(e) => setSelectedModel(e.target.value)}
+//           className="w-full border rounded px-3 py-2 text-sm mb-3"
+//         >
+//           {MODELS.map((m) => (
+//             <option key={m} value={m}>
+//               {m}
+//             </option>
+//           ))}
+//         </select>
 
-        <button
-          onClick={speakQuestion}
-          disabled={!voiceReady}
-          className={`w-full py-3 rounded text-sm font-semibold ${
-            voiceReady
-              ? "bg-green-600 text-white"
-              : "bg-gray-300 text-gray-600"
-          }`}
-        >
-          🔊 Speak Question
-        </button>
+//         <button
+//           onClick={speakQuestion}
+//           disabled={!voiceReady}
+//           className={`w-full py-3 rounded text-sm font-semibold ${
+//             voiceReady
+//               ? "bg-green-600 text-white"
+//               : "bg-gray-300 text-gray-600"
+//           }`}
+//         >
+//           🔊 Speak Question
+//         </button>
 
-        {!voiceReady && (
-          <p className="text-xs text-red-500 mt-2">
-            Voice not supported on this device.
-          </p>
-        )}
+//         {!voiceReady && (
+//           <p className="text-xs text-red-500 mt-2">
+//             Voice not supported on this device.
+//           </p>
+//         )}
 
-        <textarea
-          className="w-full border rounded p-3 mt-4 text-sm"
-          rows="5"
-          value={answer}
-          onChange={(e) => setAnswer(e.target.value)}
-          placeholder="Type your answer..."
-        />
+//         <textarea
+//           className="w-full border rounded p-3 mt-4 text-sm"
+//           rows="5"
+//           value={answer}
+//           onChange={(e) => setAnswer(e.target.value)}
+//           placeholder="Type your answer..."
+//         />
 
-        <button
-          onClick={submitAnswer}
-          className="w-full bg-blue-600 text-white py-3 rounded mt-4 text-sm font-semibold"
-        >
-          Submit Answer
-        </button>
-      </div>
-    </div>
-  );
-}
+//         <button
+//           onClick={submitAnswer}
+//           className="w-full bg-blue-600 text-white py-3 rounded mt-4 text-sm font-semibold"
+//         >
+//           Submit Answer
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
