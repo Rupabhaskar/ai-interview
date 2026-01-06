@@ -268,7 +268,7 @@ export default function VoiceAnswer({ onFinal }) {
 
   const recognitionRef = useRef(null);
   const shouldListenRef = useRef(false);
-  const lastFinalIndexRef = useRef(0); // 🔑 IMPORTANT
+  const lastTranscriptRef = useRef(""); // 🔑 DEDUPLICATION
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -277,34 +277,33 @@ export default function VoiceAnswer({ onFinal }) {
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      alert("Speech Recognition not supported");
+      alert("Speech recognition not supported");
       return;
     }
 
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
-    recognition.continuous = true;
+    recognition.continuous = false; // 🔥 IMPORTANT FOR MOBILE
     recognition.interimResults = true;
 
     recognition.onresult = (event) => {
       let interim = "";
-      let newFinal = "";
 
-      // ✅ ONLY process NEW results
-      for (let i = lastFinalIndexRef.current; i < event.results.length; i++) {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
-        const transcript = result[0].transcript;
+        const transcript = result[0].transcript.trim();
 
         if (result.isFinal) {
-          newFinal += transcript + " ";
-          lastFinalIndexRef.current = i + 1; // 🔥 advance pointer
+          // ✅ IGNORE DUPLICATES
+          if (transcript !== lastTranscriptRef.current) {
+            lastTranscriptRef.current = transcript;
+            setFinalText((prev) =>
+              prev ? `${prev} ${transcript}` : transcript
+            );
+          }
         } else {
-          interim += transcript;
+          interim = transcript;
         }
-      }
-
-      if (newFinal) {
-        setFinalText((prev) => (prev + newFinal).trim());
       }
 
       setInterimText(interim);
@@ -328,7 +327,7 @@ export default function VoiceAnswer({ onFinal }) {
 
     setFinalText("");
     setInterimText("");
-    lastFinalIndexRef.current = 0; // 🔥 reset
+    lastTranscriptRef.current = "";
     shouldListenRef.current = true;
     setListening(true);
 
@@ -367,7 +366,7 @@ export default function VoiceAnswer({ onFinal }) {
 
       <div className="mt-3 p-3 border rounded bg-gray-50 min-h-[120px] text-sm">
         <span className="text-black">{finalText} </span>
-        {/* <span className="text-gray-400">{interimText}</span> */}
+        <span className="text-gray-400">{interimText}</span>
       </div>
     </div>
   );
