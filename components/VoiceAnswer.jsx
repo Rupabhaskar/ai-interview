@@ -367,7 +367,7 @@ export default function VoiceAnswer({ onFinal }) {
 
       <div className="mt-3 p-3 border rounded bg-gray-50 min-h-[120px] text-sm">
         <span className="text-black">{finalText} </span>
-        <span className="text-gray-400">{interimText}</span>
+        {/* <span className="text-gray-400">{interimText}</span> */}
       </div>
     </div>
   );
