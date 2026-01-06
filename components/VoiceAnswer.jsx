@@ -69,24 +69,23 @@ import { useEffect, useRef, useState } from "react";
 export default function VoiceAnswer({ onFinal }) {
   const [listening, setListening] = useState(false);
   const [text, setText] = useState("");
-  const recognitionRef = useRef(null);
 
-  /* ================================
-     INIT SPEECH RECOGNITION
-  ================================ */
+  const recognitionRef = useRef(null);
+  const forceStopRef = useRef(false);
+
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      alert("Speech recognition not supported in this browser");
+      alert("Speech Recognition not supported in this browser");
       return;
     }
 
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
-    recognition.continuous = true;        // ✅ keep listening
-    recognition.interimResults = true;    // ✅ live text
+    recognition.continuous = true;
+    recognition.interimResults = true;
 
     recognition.onresult = (event) => {
       let transcript = "";
@@ -96,67 +95,54 @@ export default function VoiceAnswer({ onFinal }) {
       setText((prev) => prev + " " + transcript);
     };
 
-    recognition.onerror = (e) => {
-      console.error("Speech error:", e);
+    recognition.onend = () => {
+      // 🔥 KEEP RECORDING unless user clicks Stop
+      if (listening && !forceStopRef.current) {
+        recognition.start();
+      }
     };
 
     recognitionRef.current = recognition;
-  }, []);
+  }, [listening]);
 
-  /* ================================
-     START RECORDING
-  ================================ */
   const startRecording = () => {
-    if (!recognitionRef.current || listening) return;
+    if (!recognitionRef.current) return;
 
     setText("");
-    recognitionRef.current.start();
+    forceStopRef.current = false;
     setListening(true);
+    recognitionRef.current.start();
   };
 
-  /* ================================
-     STOP RECORDING
-  ================================ */
   const stopRecording = () => {
-    if (!recognitionRef.current || !listening) return;
+    if (!recognitionRef.current) return;
 
+    forceStopRef.current = true;
     recognitionRef.current.stop();
     setListening(false);
-    onFinal(text.trim()); // ✅ send final text to parent
+    onFinal(text.trim());
   };
 
   return (
     <div>
-      {/* ===== BUTTONS ===== */}
-      <div className="flex gap-3">
+      {!listening ? (
         <button
           onClick={startRecording}
-          disabled={listening}
-          className={`w-full py-3 rounded text-sm font-semibold ${
-            listening
-              ? "bg-gray-300 text-gray-600"
-              : "bg-blue-600 text-white"
-          }`}
+          className="w-full bg-blue-600 text-white py-3 rounded font-semibold"
         >
           🎙️ Start Recording
         </button>
-
+      ) : (
         <button
           onClick={stopRecording}
-          disabled={!listening}
-          className={`w-full py-3 rounded text-sm font-semibold ${
-            listening
-              ? "bg-red-600 text-white"
-              : "bg-gray-300 text-gray-600"
-          }`}
+          className="w-full bg-red-600 text-white py-3 rounded font-semibold"
         >
-          🛑 Stop
+          🛑 Stop Recording
         </button>
-      </div>
+      )}
 
-      {/* ===== LIVE TRANSCRIPTION ===== */}
       <div className="mt-3 p-3 border rounded bg-gray-50 text-sm min-h-[100px]">
-        {text || "Your spoken answer will appear here..."}
+        {text || "Listening... Speak your answer"}
       </div>
     </div>
   );
