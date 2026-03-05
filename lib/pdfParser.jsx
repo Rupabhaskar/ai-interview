@@ -7,8 +7,11 @@ export async function extractTextFromPDF(file) {
 
   const pdfjsLib = window.pdfjsLib;
 
-  // Disable worker to avoid issues
-  pdfjsLib.GlobalWorkerOptions.workerSrc = null;
+  // Set workerSrc to silence deprecation (use disableWorker for main-thread parsing)
+  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
 
   const arrayBuffer = await file.arrayBuffer();
 

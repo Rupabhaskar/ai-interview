@@ -11,6 +11,11 @@ async function extractTextFromPDF(file) {
     return "";
   }
 
+  if (!window.pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+
   const buffer = await file.arrayBuffer();
   const pdf = await window.pdfjsLib.getDocument({
     data: buffer,
